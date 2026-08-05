@@ -1,0 +1,23 @@
+# Termux (Android ARM64) 依赖清单
+# =================================
+# 在 Termux 里执行:
+pkg install -y clang cmake ninja make pkg-config python \
+  fmt spdlog nlohmann-json cli11 yaml-cpp \
+  curl sqlite boost libftxui googletest
+
+# 逐项说明:
+#   clang / cmake / ninja / make / pkg-config  编译工具链
+#   python                                    运行 scripts/gen_prompts.py 生成提示词头文件
+#   fmt / spdlog / nlohmann-json / cli11 / yaml-cpp
+#                                             JSON 解析、日志、CLI 解析、YAML 配置
+#   curl                                      HTTP 客户端（libcurl）
+#   sqlite                                    会话持久化（SQLite3）
+#   boost                                     kacli_extension 使用 Boost::filesystem
+#   libftxui                                  终端 UI（版本 6.1.9，与项目要求一致）
+#   googletest                                顶层 CMakeLists 的 find_package(GTest) 需要
+
+# 提示:
+#   - 无需 conan；FTXUI 直接使用系统包。
+#   - boost 包较大（约几十 MB），但 find_package(Boost COMPONENTS system filesystem)
+#     需要它提供库文件；仅 boost-headers 可能不足以链接。
+#   - 若 pkg 提示找不到某包名，先 `pkg update && pkg upgrade` 再装。

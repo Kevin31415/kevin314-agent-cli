@@ -1,0 +1,38 @@
+# Windows (x86/x64) 构建说明 —— conan 依赖管理
+# ==================================================
+
+# 前置要求（Windows 机器上一次性安装）:
+#   - Visual Studio 2022（含 "使用 C++ 的桌面开发" 组件，提供 MSVC）: https://visualstudio.microsoft.com/
+#   - CMake >= 3.20:      winget install Kitware.CMake   或从 https://cmake.org/download/ 下载
+#   - Python 3 + conan:   pip install conan
+#
+# 版本要点:
+#   - x64 默认（conan profile detect 检测到 MSVC x64）。
+#   - 如需 32 位 x86，构建前设置:
+#       conan profile detect --force -s arch=x86
+#     （conan 也会以 x86 重建依赖）
+
+# 使用步骤:
+#   1. cd win
+#   2. build.bat
+#
+# 脚本行为:
+#   - conan profile detect             生成默认编译配置
+#   - conan install . --build=missing  安装全部依赖到 build-conan\
+#       · 依赖清单见 conanfile.py（nlohmann_json / spdlog / cli11 / yaml-cpp /
+#         libcurl / sqlite3 / boost / fmt / gtest / ftxui）
+#       · conancenter 有 MSVC x64 预编译包则直接下载，否则本地源码编译（较慢）
+#   - cmake configure + build           编译 kacli.exe（Release）
+#
+# 产物:
+#   build\src\Release\kacli.exe   （Visual Studio 多配置生成器）
+#   build\src\kacli.exe           （Ninja/Makefile 等单配置生成器）
+
+# 常见问题:
+#   - "Could not find ftxui"  -> 确认 build-conan\ftxui-config.cmake 存在；
+#                               否则先删掉 build-conan 重新 conan install。
+#   - 找不到 MSVC / 编译器报错 -> 用 Visual Studio Installer 勾选
+#                               "使用 C++ 的桌面开发"。
+#   - 不想用 VS 生成器，可用 Ninja:
+#       winget install Ninja-build.Ninja
+#       cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH=%CD%\build-conan

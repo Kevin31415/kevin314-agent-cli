@@ -1,0 +1,74 @@
+# kacli 依赖清单
+# ===========================
+# 目标发行版: Ubuntu 24.04 (noble) —— 包名为 t64 后缀；旧版（22.04 jammy）见文末对照。
+#
+# 分两类：
+#   A. 开发/构建依赖 —— 编译所需（apt + pip）
+#   B. 运行时依赖     —— 仅 Debug/动态链接版需要；Release 静态版（KACLI_STATIC_DEPS=ON）
+#                        产物自包含，目标机器无需安装 B 类任何包。
+
+# ------------------------------------------------------------------
+# A. 开发/构建依赖（apt，全部源码编译需要）
+# ------------------------------------------------------------------
+# 一键安装:
+sudo apt install -y \
+  build-essential pkg-config cmake g++ ninja-build python3 \
+  libfmt-dev libspdlog-dev nlohmann-json3-dev libcli11-dev \
+  libyaml-cpp-dev libcurl4-openssl-dev libsqlite3-dev \
+  libboost-system-dev libboost-filesystem-dev \
+  libssl-dev zlib1g-dev libzstd-dev libbrotli-dev libnghttp2-dev \
+  libgtest-dev googletest
+
+# 说明：
+#   cmake >= 3.20
+#   g++  支持 C++20（GCC 11+）
+#   python3          运行 scripts/gen_prompts.py 生成提示词头文件
+#   ninja-build      可选，加快并行编译（未安装则用系统 make）
+#   build-essential + pkg-config
+#                     release.sh 需从源码编译最小静态 libcurl（configure/make 需要）
+#
+#   静态版 Release（release.sh）额外需要上面的 libssl-dev / zlib1g-dev /
+#   libzstd-dev / libbrotli-dev / libnghttp2-dev，提供 .a 静态库供链接。
+
+# FTXUI（终端 UI，唯一由 conan 管理的依赖，conan 会从源码编译）:
+pip install conan
+# conan 首次安装会自动编译 ftxui/6.1.9，需要网络；之后缓存于 ~/.conan2。
+
+# ------------------------------------------------------------------
+# B. 运行时依赖（仅 Debug 动态链接版需要）
+# ------------------------------------------------------------------
+# 一键安装 (Ubuntu 24.04):
+sudo apt install -y \
+  libcurl4t64 libssl3t64 libsqlite3-0 libyaml-cpp0.8 \
+  libspdlog1.15 libfmt10 libgnutls30t64 libnettle8t64 libhogweed6t64 \
+  libp11-kit0 libtasn1-6 libidn2-0 libunistring5 libffi8 libnghttp2-14 \
+  libnghttp3-9 libpsl5t64 librtmp1 libssh2-1t64 libldap2 libsasl2-2 \
+  libbrotli1 libzstd1 zlib1g libkrb5-3 libgssapi-krb5-2 libk5crypto3 \
+  libkrb5support0 libcom-err2 libkeyutils1 libgmp10
+
+# 逐项含义:
+#   libcurl4t64        HTTP/HTTPS 客户端
+#   libssl3t64         OpenSSL 3 (libssl.so.3 / libcrypto.so.3)
+#   libsqlite3-0       SessionManager 持久化
+#   libyaml-cpp0.8     配置文件 YAML 解析
+#   libspdlog1.15      日志
+#   libfmt10           spdlog 格式化后端
+#   libgnutls30t64     TLS (GnuTLS)
+#   libnettle8t64 / libhogweed6t64   GnuTLS 底层加密
+#   libp11-kit0        PKCS#11 提供者
+#   libtasn1-6         ASN.1 编解码
+#   libidn2-0          IDN 国际化域名
+#   libunistring5      宽字节字符串处理
+#   libffi8            外部函数调用库
+#   libnghttp2-14 / libnghttp3-9     HTTP/2 与 HTTP/3 (libcurl)
+#   libpsl5t64         Public Suffix List (libcurl)
+#   librtmp1 / libssh2-1t64 / libldap2 / libsasl2-2   libcurl 传输协议
+#   libbrotli1 / libzstd1 / zlib1g   压缩 (libcurl)
+#   libkrb5-3 / libgssapi-krb5-2 / libk5crypto3 / libkrb5support0 / libcom-err2 / libkeyutils1   Kerberos/GSSAPI (libcurl)
+#   libgmp10           大数运算 (libgnutls)
+#   libstdc++6 / libgcc-s1 / libc6    系统自带 C/C++ 运行时
+
+# ------------------------------------------------------------------
+# 旧发行版（Ubuntu 22.04 jammy）包名对照（无 t64 后缀）:
+#   libcurl4 libssl3 libgnutls30 libnettle8 libhogweed6 libpsl5 libssh2-1 \
+#   libldap-2.5-0 libyaml-cpp0.7 libspdlog1 libfmt8
