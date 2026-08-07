@@ -16,7 +16,7 @@
 
 ## 目录结构
 
-- /build-scripts (linux开发使用的构建脚本)
+- /build-scripts (开发使用的构建脚本)
 - /scripts (conan的脚本)
 - /src (源代码)
 - /termux (termux构建脚本)
