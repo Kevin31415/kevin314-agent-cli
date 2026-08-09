@@ -1,10 +1,12 @@
 # Termux (Android ARM64) 依赖清单
 # =================================
+
+# 依赖待更改
+
 # 在 Termux 里执行:
-pkg install -y clang cmake ninja make pkg-config python \
+# pkg install -y clang cmake ninja make pkg-config python \
   fmt spdlog nlohmann-json cli11 yaml-cpp \
   curl sqlite boost libftxui googletest
-
 # 逐项说明:
 #   clang / cmake / ninja / make / pkg-config  编译工具链
 #   python                                    运行 scripts/gen_prompts.py 生成提示词头文件

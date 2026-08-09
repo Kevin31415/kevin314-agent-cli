@@ -1,7 +1,3 @@
-# src/CMakeLists.txt
-# Kevin314 Agent Cli 核心库 + CLI 可执行文件
-
-# ========== 静态单文件构建（KACLI_STATIC_DEPS=ON） ==========
 if(KACLI_STATIC_DEPS)
     # spdlog/fmt 走 header-only，避免 libspdlog.so / libfmt.so
     add_library(kacli_spdlog INTERFACE)
