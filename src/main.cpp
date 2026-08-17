@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
         } else if (args.command == "key") {
             return goose::cli::run_key_cmd(args);
         } else {
-            std::cerr << "未知命令: " << args.command << std::endl;
+            std::cerr << "未知命令: " << args.command << " , 别瞎输了行吗, bug够多了" << std::endl;
             return 1;
         }
     } catch (const CLI::ParseError& e) {

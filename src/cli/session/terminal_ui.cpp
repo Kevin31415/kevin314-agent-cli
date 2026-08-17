@@ -1032,13 +1032,15 @@ ftxui::Element TerminalUi::topbar_element() {
         constexpr int kStateBudget = 9;
         state_plain = pad_or_truncate_to_width(state_plain, kStateBudget);
 
-        int64_t big = total_input_ + total_output_;
-        int64_t small = big - compact_point_tokens_;
-        if (small < 0) small = 0;
+        int64_t context_now = current_context_tokens_;
+        int64_t context_total = historical_tokens_;
+        if (context_now < 0) context_now = 0;
+        if (context_total < context_now) context_total = context_now;
 
         std::string id5 = session_id_.size() >= 5 ? session_id_.substr(0, 5) : session_id_;
         std::string prefix = "\u250c\u2500 Kevin314 Agent Cli \u2502 " + model_name_ + " \u2502 ";
-        std::string suffix = " \u2502  " + format_token(small) + "/" + format_token(big) +
+        std::string suffix = " \u2502  \u672c\u6b21 " + format_token(context_now) +
+                             "  \u2502  \u5386\u53f2 " + format_token(context_total) +
                              "  \u2502  " + id5 + "  \u2500\u2510";
 
         int avail = std::max(1, chat_w_);
@@ -1552,9 +1554,16 @@ void TerminalUi::set_session_info(const std::string& session_id, const std::stri
     model_name_ = model;
 }
 
-void TerminalUi::set_compact_point() {
+void TerminalUi::set_context_tokens(int64_t tokens) {
+    if (tokens < 0) tokens = 0;
     std::lock_guard<std::mutex> lock(model_mutex_);
-    compact_point_tokens_ = total_input_ + total_output_;
+    // 左栏：本次对话上下文 token 总数；右栏：历史累计上下文（只增不减）。
+    // 仅在上下文增长时累加增量；压缩/清空导致的缩减不减少历史值。
+    if (tokens > current_context_tokens_) {
+        historical_tokens_ += tokens - current_context_tokens_;
+    }
+    current_context_tokens_ = tokens;
+    request_redraw();
 }
 
 void TerminalUi::set_compact_result(const std::string& text) {
@@ -1568,14 +1577,6 @@ void TerminalUi::set_compact_result(const std::string& text) {
         }
     }
     request_redraw();
-}
-
-void TerminalUi::update_usage(int64_t input, int64_t output) {
-    std::lock_guard<std::mutex> lock(model_mutex_);
-    turn_input_ += input;
-    turn_output_ += output;
-    total_input_ += input;
-    total_output_ += output;
 }
 
 void TerminalUi::set_work_state(WorkState state, const std::string& tool_name) {
@@ -1769,7 +1770,7 @@ void TerminalUi::on_agent_event(const AgentEvent& event) {
         case AgentEventType::Usage:
             if (event.provider_usage) {
                 const auto& usage = event.provider_usage->usage;
-                update_usage(usage.input_tokens.value_or(0), usage.output_tokens.value_or(0));
+                (void)usage;
             }
             break;
     }

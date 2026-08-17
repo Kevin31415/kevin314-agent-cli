@@ -50,7 +50,8 @@ public:
     void start_refresh();
     void stop_refresh();
 
-    void set_compact_point();
+    // 更新本次对话上下文 token 总数（左栏）与历史累计上下文（右栏，只增不减）。
+    void set_context_tokens(int64_t tokens);
     void set_compact_result(const std::string& text);
 
     // 标记 AI 是否正在工作。工作期间普通输入回车会被拦截提示，/ 命令走忙碌回调。
@@ -134,7 +135,6 @@ private:
     // ---- 消息/状态入口 ----
     void append_status(const std::string& text);
 
-    void update_usage(int64_t input, int64_t output);
     void set_work_state(WorkState state, const std::string& tool_name = "");
     void request_redraw();
 
@@ -204,11 +204,12 @@ private:
     std::string provider_name_;
     std::string model_name_;
     std::shared_ptr<spdlog::logger> saved_logger_;
-    int64_t turn_input_ = 0;
-    int64_t turn_output_ = 0;
-    int64_t total_input_ = 0;
-    int64_t total_output_ = 0;
-    int64_t compact_point_tokens_ = 0;
+
+    // 顶栏 token 统计：
+    // current_context_tokens_ = 本次对话上下文 token 总数（左栏）；
+    // historical_tokens_      = 历史累计上下文 token 总数（右栏，含压缩前，只增不减）。
+    int64_t current_context_tokens_ = 0;
+    int64_t historical_tokens_ = 0;
 
     WorkState state_ = WorkState::Idle;
     std::string state_tool_;

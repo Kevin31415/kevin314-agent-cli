@@ -41,6 +41,8 @@ private:
     void handle_slash_command(const ParsedInput& cmd);
     void render_json_event(const AgentEvent& event);
     void maybe_auto_compact();
+    // 将当前会话上下文 token 估算同步给顶部栏（TUI 激活时）。
+    void refresh_context_tokens();
     bool should_exit_ = false;
 
     std::unique_ptr<TerminalUi> ui_;

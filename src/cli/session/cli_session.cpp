@@ -123,6 +123,7 @@ int CliSession::run_interactive() {
         if (tui_active_) {
             ui_->append_user_message(parsed.text);
         }
+        refresh_context_tokens();
 
         maybe_auto_compact();
 
@@ -247,6 +248,7 @@ Result<void> CliSession::handle_agent_event(const AgentEvent& event) {
     if (event.type == AgentEventType::Message && event.msg) {
         SessionManager::instance().add_message(session_id_, *event.msg);
         messages_.push(*event.msg);
+        refresh_context_tokens();
     }
     return Result<void>::ok();
 }
@@ -256,6 +258,12 @@ void CliSession::out(const std::string& s) {
         ui_->append_status_text(s);
     } else if (!quiet_) {
         std::cout << s;
+    }
+}
+
+void CliSession::refresh_context_tokens() {
+    if (tui_active_) {
+        ui_->set_context_tokens(estimate_conversation_tokens(messages_));
     }
 }
 
@@ -280,7 +288,7 @@ void CliSession::maybe_auto_compact() {
         messages_ = compact_result->conversation;
         SessionManager::instance().replace_messages(session_id_, messages_.messages());
         if (tui_active_) {
-            ui_->set_compact_point();
+            refresh_context_tokens();
             ui_->set_compact_result(build_compacted_text(messages_));
         }
         if (!quiet_) {
@@ -299,6 +307,7 @@ void CliSession::handle_slash_command(const ParsedInput& cmd) {
     } else if (cmd.command == "/clear") {
         messages_ = Conversation();
         SessionManager::instance().clear_messages(session_id_);
+        refresh_context_tokens();
         out("对话已清空。\n");
     } else if (cmd.command == "/exit" || cmd.command == "/quit") {
         out("再见!\n");
@@ -385,6 +394,7 @@ void CliSession::handle_slash_command(const ParsedInput& cmd) {
         if (compact_result) {
             messages_ = compact_result->conversation;
             SessionManager::instance().replace_messages(session_id_, messages_.messages());
+            refresh_context_tokens();
             out("对话已压缩。\n");
             if (tui_active_) {
                 ui_->set_compact_result(build_compacted_text(messages_));

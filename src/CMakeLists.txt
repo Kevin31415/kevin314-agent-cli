@@ -51,6 +51,8 @@ add_library(kacli_core STATIC
     core/tool.cpp
     core/prompt_manager.cpp
     core/moim.cpp
+    core/agent.cpp
+    core/agent.h
     config/paths.cpp
     utils/prompt_template.cpp
 )
