@@ -46,7 +46,7 @@
 
 ### 环境要求
 
-- 操作系统：Linux / Termux / Windows
+- 操作系统：Linux / Android(Termux) / Windows
 - 依赖在构建处已标注
 
 ### 安装步骤
